@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwtMiddleware = require('../middleware/jwtMiddleware');
+const uploadMiddleware = require('../middleware/uploadsMiddleware');
 const userController = require('../controllers/userControllers');
 const postController = require('../controllers/postController');
 
@@ -20,5 +21,14 @@ router.get('/posts', jwtMiddleware, postController.getPost);
 router.post('/posts', jwtMiddleware, [
     body('content').isEmpty().withMessage(`You can't post it empty`)
 ], postController.createPost);
+
+router.post('/upload', uploadMiddleware.single('image'), (req, res) => {
+    try {
+        const imageUrl = '/uploads/' + req.file.filename;
+        res.json({ imageUrl });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to upload image' });
+    }
+})
 
 module.exports = router;
